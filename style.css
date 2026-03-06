@@ -1,0 +1,55 @@
+.indent {
+  text-indent: 40px;
+  text-align: justify; 
+}
+
+.box4 {
+  text-align: justify;
+  line-height: 1.5;
+}
+
+.box1 {
+  text-align: justify;
+  line-height: 1.4;
+}
+
+.founder-pic {
+  position: absolute;
+  top: 40px;
+  right: 40px;
+  text-align: center;
+  width: 280px;
+}
+
+.founder-pic img {
+  width: 100%;
+  border-radius: 10px;
+}
+
+.founder-pic h3 {
+  margin: 5px 0;
+}
+
+.founder-pic p {
+  margin: 0;
+}
+
+.box6 h1 {
+  text-align: center;
+}
+
+.tab {
+  margin-left: 40px;   
+}
+
+footer {
+  background-color: #002183;
+  color: white;
+  text-align: center;
+  padding: 20px;
+  height: 70px;
+  border-radius: 10px;
+  clear: both;   
+  margin-top: 20px;
+}
+

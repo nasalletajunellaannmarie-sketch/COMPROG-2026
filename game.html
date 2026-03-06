@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STEM Puzzle Game</title>
+
+<style>
+
+*{box-sizing:border-box;}
+
+body{
+font-family:Georgia, serif;
+margin:0;
+background:#1600ba;
+padding:10px;
+}
+
+/* Header */
+.header {
+  position: relative;
+  padding: 30px;
+  text-align: center;
+  background-image: url("BG.png");
+  background-size: cover;
+  background-position: center;
+  height: 270px;
+  transition: all 0.8s ease;
+}
+
+.header:hover {
+  background-image: url("BG.png"); 
+  background-color: white;
+  height: 400px;
+}
+
+.header img {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  padding: 10px;
+  margin-top: 20px;
+  transition: opacity 0.5s ease;
+}
+
+.header:hover img {
+  opacity: 0;
+}
+
+.topnav{
+background:#002183;
+display:flex;
+flex-wrap:wrap;
+}
+
+.topnav a{
+color:white;
+padding:12px;
+text-decoration:none;
+flex:1;
+text-align:center;
+font-weight:bold;
+}
+
+.topnav a:hover{
+background:#fdfd83;
+color:navy;
+}
+
+/* Footer */
+footer {
+  background-color: #f9f7f7;
+  color: rgb(68, 68, 68);
+  text-align: center;
+  font-size: 15px;
+  padding: 5px;
+  height: 200px;
+  border-radius:10px;
+}
+
+.footer-logo {
+  width: 175px;      
+  height: 25px;
+  margin-bottom: 10px;
+}
+
+.game-area{
+max-width:700px;
+margin:30px auto;
+background:linear-gradient(135deg,#002183,#4f6fff);
+padding:30px;
+border-radius:20px;
+color:white;
+text-align:center;
+}
+
+.instructions{
+background:white;
+color:#002183;
+padding:20px;
+border-radius:10px;
+}
+
+#puzzle{
+display:grid;
+gap:6px;
+justify-content:center;
+margin-top:20px;
+}
+
+.tile{
+display:flex;
+justify-content:center;
+align-items:center;
+background:white;
+color:#002183;
+font-size:22px;
+font-weight:bold;
+border-radius:10px;
+cursor:pointer;
+height:80px;
+width:80px;
+}
+
+.empty{
+background:transparent;
+cursor:default;
+}
+
+button{
+padding:10px 20px;
+margin:10px;
+border:none;
+border-radius:6px;
+font-weight:bold;
+cursor:pointer;
+}
+
+.start{background:green;color:white;}
+.home{background:orange;color:white;}
+.retry{background:red;color:white;}
+.next{background:#fdfd83;color:#002183;}
+
+.timer{
+font-size:20px;
+margin-top:10px;
+}
+
+.level{
+font-size:18px;
+}
+
+.popup{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.6);
+display:flex;
+justify-content:center;
+align-items:center;
+display:none;
+}
+
+.popup-box{
+background:white;
+color:#002183;
+padding:30px;
+border-radius:10px;
+text-align:center;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header"></div>
+
+<div class="topnav">
+<a href="index.html">About LCBA</a>
+<a href="stem.html">STEM</a>
+<a href="image.html">Image Gallery</a>
+<a href="video.html">Video Gallery</a>
+<a href="game.html">Game</a>
+</div>
+
+<div class="game-area">
+
+<!-- INSTRUCTION SCREEN -->
+
+<div id="homeScreen" class="instructions">
+
+<h2>🧩 STEM Sliding Puzzle</h2>
+
+<ul>
+<li>Move the tiles beside the empty space.</li>
+<li>Arrange numbers in correct order.</li>
+<li>Finish levels before time runs out.</li>
+<li>You only have <b>3 minutes</b>.</li>
+</ul>
+
+<button class="start" onclick="startGame()">Start Game</button>
+
+</div>
+
+<!-- GAME SCREEN -->
+
+<div id="gameScreen" style="display:none;">
+
+<div class="level">Level: <span id="level">1</span></div>
+<div class="timer">Time: <span id="time">3:00</span></div>
+
+<div id="puzzle"></div>
+
+<button class="home" onclick="goHome()">Home</button>
+
+<div id="nextContainer"></div>
+<div id="retryContainer"></div>
+
+</div>
+
+</div>
+
+<!-- POPUP -->
+
+<div class="popup" id="popup">
+<div class="popup-box">
+<h2 id="popupText"></h2>
+</div>
+</div>
+
+<script>
+
+let puzzle=document.getElementById("puzzle");
+
+let level=1;
+let size=3;
+let tiles=[];
+let timer;
+let timeLeft=180;
+
+function startGame(){
+
+document.getElementById("homeScreen").style.display="none";
+document.getElementById("gameScreen").style.display="block";
+
+startTimer();
+createTiles();
+shuffle();
+
+}
+
+function startTimer(){
+
+clearInterval(timer);
+
+timer=setInterval(()=>{
+
+timeLeft--;
+
+let minutes=Math.floor(timeLeft/60);
+let seconds=timeLeft%60;
+
+if(seconds<10)seconds="0"+seconds;
+
+document.getElementById("time").innerText=minutes+":"+seconds;
+
+if(timeLeft<=0){
+loseGame();
+}
+
+},1000);
+
+}
+
+function createTiles(){
+
+tiles=[];
+
+for(let i=1;i<size*size;i++){
+tiles.push(String(i));
+}
+
+tiles.push("");
+
+}
+
+function createBoard(){
+
+puzzle.innerHTML="";
+
+puzzle.style.gridTemplateColumns=`repeat(${size},80px)`;
+
+tiles.forEach((tile,index)=>{
+
+let div=document.createElement("div");
+
+div.classList.add("tile");
+
+if(tile===""){div.classList.add("empty");}
+
+div.innerText=tile;
+
+div.onclick=()=>moveTile(index);
+
+puzzle.appendChild(div);
+
+});
+
+}
+
+function moveTile(index){
+
+let emptyIndex=tiles.indexOf("");
+
+let validMoves=[index-1,index+1,index-size,index+size];
+
+if(validMoves.includes(emptyIndex)){
+
+[tiles[index],tiles[emptyIndex]]=[tiles[emptyIndex],tiles[index]];
+
+createBoard();
+
+checkWin();
+
+}
+
+}
+
+function shuffle(){
+
+tiles.sort(()=>Math.random()-0.5);
+
+createBoard();
+
+}
+
+function checkWin(){
+
+let win=[];
+
+for(let i=1;i<size*size;i++){
+win.push(String(i));
+}
+
+win.push("");
+
+if(JSON.stringify(tiles)===JSON.stringify(win)){
+
+showPopup("🎉 You Win!");
+
+let nextBtn=document.createElement("button");
+nextBtn.innerText="Next";
+nextBtn.className="next";
+
+nextBtn.onclick=nextLevel;
+
+document.getElementById("nextContainer").innerHTML="";
+document.getElementById("nextContainer").appendChild(nextBtn);
+
+}
+
+}
+
+function nextLevel(){
+
+level++;
+
+if(level===2)size=4;
+else if(level===3)size=5;
+else{
+showPopup("🏆 You finished all levels!");
+return;
+}
+
+document.getElementById("level").innerText=level;
+
+document.getElementById("nextContainer").innerHTML="";
+
+createTiles();
+shuffle();
+
+}
+
+function loseGame(){
+
+clearInterval(timer);
+
+showPopup("❌ You Lose!");
+
+let retryBtn=document.createElement("button");
+retryBtn.innerText="Retry";
+retryBtn.className="retry";
+
+retryBtn.onclick=retryLevel;
+
+document.getElementById("retryContainer").appendChild(retryBtn);
+
+}
+
+function retryLevel(){
+
+document.getElementById("retryContainer").innerHTML="";
+
+timeLeft=180;
+startTimer();
+
+createTiles();
+shuffle();
+
+}
+
+function goHome(){
+
+document.getElementById("gameScreen").style.display="none";
+document.getElementById("homeScreen").style.display="block";
+
+}
+
+function showPopup(text){
+
+let popup=document.getElementById("popup");
+
+document.getElementById("popupText").innerText=text;
+
+popup.style.display="flex";
+
+setTimeout(()=>{
+
+popup.style.display="none";
+
+},1500);
+
+}
+
+</script>
+
+</body>
+</html>
